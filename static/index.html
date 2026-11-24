@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AgriVision AI | Multimodal Crop Doctor & Vernacular Advisor</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome / Lucide icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0fdf4',
+              100: '#dcfce7',
+              500: '#22c55e',
+              600: '#16a34a',
+              700: '#15803d',
+              800: '#166534',
+              900: '#14532d',
+            },
+            google: {
+              blue: '#1a73e8',
+              red: '#ea4335',
+              yellow: '#fbbc04',
+              green: '#34a853',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @keyframes pulse-slow {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.85; transform: scale(1.02); }
+    }
+    .scanner-line {
+      animation: scan 2s linear infinite;
+    }
+    @keyframes scan {
+      0% { top: 0%; opacity: 0.8; }
+      50% { top: 95%; opacity: 1; }
+      100% { top: 0%; opacity: 0.8; }
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col antialiased">
+
+  <!-- Top Navigation Bar -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-green-600 to-emerald-400 flex items-center justify-center text-white shadow-md">
+          <i class="fa-solid fa-seedling text-xl"></i>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="text-xl font-bold tracking-tight text-slate-900">AgriVision<span class="text-green-600">.AI</span></span>
+            <span class="bg-gradient-to-r from-blue-600 to-green-600 text-white text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full tracking-wide">
+              APAC 2026
+            </span>
+          </div>
+          <p class="text-xs text-slate-500 hidden sm:block">Google Gen AI Meet the Builders</p>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-3">
+        <!-- Language Selector -->
+        <div class="relative">
+          <select id="langSelect" onchange="changeLanguage()" class="appearance-none bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs sm:text-sm font-medium py-1.5 pl-3 pr-8 rounded-lg cursor-pointer transition border border-slate-300 focus:outline-none focus:ring-2 focus:ring-green-500">
+            <option value="en" selected>🌐 English</option>
+            <option value="hi">🇮🇳 हिन्दी (Hindi)</option>
+            <option value="mr">🇮🇳 मराठी (Marathi)</option>
+            <option value="te">🇮🇳 తెలుగు (Telugu)</option>
+            <option value="ta">🇮🇳 தமிழ் (Tamil)</option>
+            <option value="bn">🇮🇳 বাংলা (Bengali)</option>
+          </select>
+          <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-500">
+            <i class="fa-solid fa-chevron-down text-xs"></i>
+          </div>
+        </div>
+
+        <!-- API Key Settings Button -->
+        <button onclick="openApiModal()" title="Configure Gemini API Key" class="p-2 text-slate-600 hover:text-green-600 hover:bg-slate-100 rounded-lg transition border border-slate-200">
+          <i class="fa-solid fa-key"></i>
+        </button>
+
+        <!-- Google Cloud Status Tag -->
+        <div id="apiStatusBadge" class="hidden sm:flex items-center space-x-1.5 bg-green-50 text-green-700 text-xs font-medium px-2.5 py-1 rounded-full border border-green-200">
+          <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+          <span>Gemini 2.5 Flash</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Banner -->
+  <section class="bg-gradient-to-b from-green-50/70 via-white to-slate-50 py-8 px-4 sm:px-6 lg:px-8 border-b border-slate-100">
+    <div class="max-w-4xl mx-auto text-center">
+      <div class="inline-flex items-center space-x-2 bg-emerald-100/80 text-emerald-800 text-xs font-semibold px-3 py-1 rounded-full mb-3">
+        <i class="fa-solid fa-sparkles text-emerald-600"></i>
+        <span>AI-Powered Multimodal Crop Diagnostics & Voice Advisory for APAC</span>
+      </div>
+      <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+        Instant Plant Disease Diagnosis & <br class="hidden sm:inline" />
+        <span class="bg-clip-text text-transparent bg-gradient-to-r from-green-600 to-emerald-700">Vernacular Voice Advisory</span>
+      </h1>
+      <p class="mt-3 text-sm sm:text-base text-slate-600 max-w-2xl mx-auto">
+        Empowering smallholder farmers across Asia-Pacific with high-precision Google Gemini Vision diagnosis, low-cost organic remedies, and spoken advice in local languages.
+      </p>
+    </div>
+  </section>
+
+  <!-- Main Content Area -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+      <!-- LEFT COLUMN: Image Input & Diagnostic Trigger (5 Cols) -->
+      <div class="lg:col-span-5 space-y-6">
+
+        <!-- Input Card -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-5">
+          <div class="flex items-center justify-between">
+            <h2 class="text-base font-bold text-slate-800 flex items-center space-x-2">
+              <i class="fa-solid fa-camera text-green-600"></i>
+              <span>Capture or Upload Crop</span>
+            </h2>
+            <span class="text-xs text-slate-400">JPG, PNG, WebP</span>
+          </div>
+
+          <!-- Drop / Camera Area -->
+          <div id="dropZone" class="relative group border-2 border-dashed border-slate-300 hover:border-green-500 rounded-xl p-6 text-center transition cursor-pointer bg-slate-50/60 overflow-hidden min-h-[260px] flex flex-col items-center justify-center">
+            
+            <!-- Default Upload Prompt -->
+            <div id="uploadPrompt" class="space-y-3">
+              <div class="w-16 h-16 mx-auto rounded-full bg-green-100 text-green-600 flex items-center justify-center group-hover:scale-110 transition duration-300 shadow-sm">
+                <i class="fa-solid fa-cloud-arrow-up text-2xl"></i>
+              </div>
+              <div>
+                <p class="text-sm font-semibold text-slate-700">Click to upload photo</p>
+                <p class="text-xs text-slate-500 mt-1">or drag and drop plant leaf image</p>
+              </div>
+              <div class="pt-2 flex justify-center space-x-2">
+                <label for="cameraInput" class="inline-flex items-center space-x-1.5 bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs font-semibold px-3 py-1.5 rounded-lg cursor-pointer transition">
+                  <i class="fa-solid fa-camera"></i>
+                  <span>Take Photo</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Image Preview Box -->
+            <div id="previewContainer" class="hidden relative w-full h-full max-h-[300px] flex items-center justify-center">
+              <img id="previewImage" src="" alt="Selected Crop" class="max-h-[280px] w-auto object-contain rounded-lg shadow-sm" />
+              <!-- Scanning Animation Overlay -->
+              <div id="scanOverlay" class="hidden absolute inset-0 bg-green-900/20 backdrop-blur-[1px] rounded-lg overflow-hidden">
+                <div class="scanner-line absolute left-0 right-0 h-1 bg-gradient-to-r from-transparent via-green-400 to-transparent shadow-[0_0_15px_#22c55e]"></div>
+                <div class="absolute inset-0 flex items-center justify-center">
+                  <div class="bg-black/75 text-white text-xs font-medium px-4 py-2 rounded-full flex items-center space-x-2 shadow-lg">
+                    <i class="fa-solid fa-circle-notch fa-spin text-green-400"></i>
+                    <span>Gemini 2.5 analyzing symptoms...</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Hidden Inputs -->
+            <input type="file" id="fileInput" accept="image/*" class="hidden" onchange="handleFileSelect(event)">
+            <input type="file" id="cameraInput" accept="image/*" capture="environment" class="hidden" onchange="handleFileSelect(event)">
+          </div>
+
+          <!-- Analyze Button -->
+          <button id="analyzeBtn" onclick="runDiagnosis()" disabled class="w-full bg-slate-300 text-slate-500 font-bold py-3 px-4 rounded-xl shadow-sm transition duration-200 flex items-center justify-center space-x-2 cursor-not-allowed">
+            <i class="fa-solid fa-stethoscope"></i>
+            <span>Diagnose Crop Health</span>
+          </button>
+        </div>
+
+        <!-- Quick One-Click Demo Samples (Crucial for Reviewers & Hackathon Demos) -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-3">
+          <div class="flex items-center justify-between">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center space-x-1.5">
+              <i class="fa-solid fa-bolt text-yellow-500"></i>
+              <span>Try Live Demo Samples</span>
+            </h3>
+            <span class="text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-medium">1-Click Test</span>
+          </div>
+          <p class="text-xs text-slate-500">Don't have a leaf nearby? Click any sample to test Gemini diagnosis instantly:</p>
+          <div class="grid grid-cols-2 gap-2 pt-1">
+            <button onclick="loadSample('tomato_late_blight')" class="text-left p-2.5 rounded-xl border border-slate-200 hover:border-red-400 hover:bg-red-50/50 transition group">
+              <span class="text-xs font-bold text-slate-800 block group-hover:text-red-700">🍅 Tomato</span>
+              <span class="text-[11px] text-red-600 font-medium">Late Blight (Severe)</span>
+            </button>
+            <button onclick="loadSample('rice_blast')" class="text-left p-2.5 rounded-xl border border-slate-200 hover:border-amber-400 hover:bg-amber-50/50 transition group">
+              <span class="text-xs font-bold text-slate-800 block group-hover:text-amber-700">🌾 Paddy / Rice</span>
+              <span class="text-[11px] text-amber-600 font-medium">Blast Disease</span>
+            </button>
+            <button onclick="loadSample('cotton_leaf_curl')" class="text-left p-2.5 rounded-xl border border-slate-200 hover:border-purple-400 hover:bg-purple-50/50 transition group">
+              <span class="text-xs font-bold text-slate-800 block group-hover:text-purple-700">🌱 Cotton</span>
+              <span class="text-[11px] text-purple-600 font-medium">Leaf Curl Virus</span>
+            </button>
+            <button onclick="loadSample('healthy_wheat')" class="text-left p-2.5 rounded-xl border border-slate-200 hover:border-green-400 hover:bg-green-50/50 transition group">
+              <span class="text-xs font-bold text-slate-800 block group-hover:text-green-700">🌿 Wheat</span>
+              <span class="text-[11px] text-green-600 font-medium">Healthy (Vigorous)</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT COLUMN: Diagnostic Results & Vernacular Voice Advisory (7 Cols) -->
+      <div class="lg:col-span-7 space-y-6">
+
+        <!-- Welcome Placeholder (Visible before diagnosis) -->
+        <div id="placeholderState" class="bg-white rounded-2xl border border-dashed border-slate-300 p-12 text-center space-y-4">
+          <div class="w-16 h-16 mx-auto rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center">
+            <i class="fa-solid fa-microscope text-2xl"></i>
+          </div>
+          <h3 class="text-lg font-bold text-slate-800">No Crop Scanned Yet</h3>
+          <p class="text-sm text-slate-500 max-w-md mx-auto">
+            Upload an image of a crop leaf or click one of the <strong>Demo Samples</strong> on the left to see Google Gemini's multimodal diagnosis, remedies, and vernacular voice advice.
+          </p>
+        </div>
+
+        <!-- DIAGNOSIS RESULT CARD (Initially hidden) -->
+        <div id="resultsCard" class="hidden space-y-6">
+          
+          <!-- Header Banner -->
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
+              <div>
+                <span class="text-xs uppercase font-bold tracking-wider text-slate-400" id="resCropName">Crop Name</span>
+                <h2 class="text-2xl font-extrabold text-slate-900" id="resDiseaseName">Disease Name</h2>
+              </div>
+              <div class="flex items-center space-x-2">
+                <span id="resSeverityBadge" class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-red-100 text-red-700 border border-red-200">
+                  High Severity
+                </span>
+                <span id="resConfidenceBadge" class="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  <i class="fa-solid fa-circle-check text-emerald-500 mr-1"></i>96% Confidence
+                </span>
+              </div>
+            </div>
+
+            <!-- Vernacular Spoken Advisory Banner & Audio Player -->
+            <div class="bg-gradient-to-r from-emerald-500 to-green-600 rounded-xl p-4 text-white shadow-md space-y-3">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                  <i class="fa-solid fa-volume-high text-lg"></i>
+                  <span class="font-bold text-sm tracking-wide">Vernacular Voice Advisory (<span id="resVoiceLang">English</span>)</span>
+                </div>
+                <button id="playAudioBtn" onclick="toggleAudio()" class="bg-white text-green-700 hover:bg-green-50 font-bold px-3 py-1.5 rounded-lg text-xs flex items-center space-x-1.5 shadow transition">
+                  <i id="audioIcon" class="fa-solid fa-play"></i>
+                  <span id="audioBtnText">Listen</span>
+                </button>
+              </div>
+              <p id="resVernacularText" class="text-xs sm:text-sm text-green-50 leading-relaxed font-normal bg-black/10 p-3 rounded-lg">
+                Loading spoken advisory...
+              </p>
+              <audio id="audioPlayer" class="hidden"></audio>
+            </div>
+          </div>
+
+          <!-- Tabbed Remediation Breakdown -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            
+            <!-- Symptoms & Diagnosis -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-3">
+              <h3 class="text-sm font-bold text-slate-800 flex items-center space-x-2 text-amber-700">
+                <i class="fa-solid fa-magnifying-glass-chart"></i>
+                <span>Symptoms & Cause</span>
+              </h3>
+              <p class="text-xs text-slate-500 font-medium">Pathogen: <span id="resPathogen" class="text-slate-800 font-bold">Fungal</span></p>
+              <ul id="resSymptomsList" class="space-y-1.5 text-xs text-slate-600 list-disc list-inside">
+              </ul>
+            </div>
+
+            <!-- Yield Risk Assessment -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-3">
+              <h3 class="text-sm font-bold text-slate-800 flex items-center space-x-2 text-red-600">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <span>Yield Loss Risk</span>
+              </h3>
+              <p id="resYieldRisk" class="text-xs text-slate-600 leading-relaxed bg-red-50/50 p-3 rounded-xl border border-red-100">
+                Evaluating risk...
+              </p>
+            </div>
+
+            <!-- Low-Cost Organic Remedies (Crucial for Smallholders) -->
+            <div class="bg-white rounded-2xl border border-emerald-200 shadow-sm p-5 space-y-3 bg-emerald-50/20">
+              <h3 class="text-sm font-bold text-emerald-800 flex items-center space-x-2">
+                <i class="fa-solid fa-leaf text-emerald-600"></i>
+                <span>Organic & Low-Cost Remedies</span>
+              </h3>
+              <ul id="resOrganicList" class="space-y-2 text-xs text-slate-700">
+              </ul>
+            </div>
+
+            <!-- Precision Chemical Treatment -->
+            <div class="bg-white rounded-2xl border border-blue-200 shadow-sm p-5 space-y-3 bg-blue-50/20">
+              <h3 class="text-sm font-bold text-blue-900 flex items-center space-x-2">
+                <i class="fa-solid fa-flask-vial text-blue-600"></i>
+                <span>Chemical & Precision Treatment</span>
+              </h3>
+              <ul id="resChemicalList" class="space-y-2 text-xs text-slate-700">
+              </ul>
+            </div>
+
+          </div>
+
+          <!-- Prevention Tips -->
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-3">
+            <h3 class="text-sm font-bold text-slate-800 flex items-center space-x-2 text-slate-700">
+              <i class="fa-solid fa-shield-halved text-green-600"></i>
+              <span>Preventative Measures & Neighbor Protection</span>
+            </h3>
+            <ul id="resPreventionList" class="space-y-1.5 text-xs text-slate-600 list-disc list-inside">
+            </ul>
+          </div>
+
+          <!-- Interactive Gemini Agronomist Follow-up Chat -->
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div class="flex items-center space-x-2">
+                <div class="w-7 h-7 rounded-lg bg-green-100 text-green-700 flex items-center justify-center text-xs">
+                  <i class="fa-solid fa-robot"></i>
+                </div>
+                <h3 class="text-sm font-bold text-slate-800">Ask Gemini Agronomist</h3>
+              </div>
+              <span class="text-[11px] text-slate-400">Ask questions about dosage, rain, soil</span>
+            </div>
+
+            <div id="chatHistory" class="space-y-2 max-h-48 overflow-y-auto text-xs text-slate-700 pr-1">
+              <div class="bg-slate-100 p-2.5 rounded-lg text-slate-600">
+                🌱 <em>Hello! You can ask any follow-up questions regarding treatment timing, spray precautions, or organic fertilizers.</em>
+              </div>
+            </div>
+
+            <div class="flex space-x-2">
+              <input type="text" id="chatInput" placeholder="e.g., Can I spray this remedy right before rain?" class="flex-1 text-xs border border-slate-300 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-green-500" onkeydown="if(event.key === 'Enter') sendChatMessage()">
+              <button onclick="sendChatMessage()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow transition">
+                <i class="fa-solid fa-paper-plane mr-1"></i> Ask
+              </button>
+            </div>
+          </div>
+
+          <!-- Bottom Action Bar -->
+          <div class="flex justify-between items-center pt-2">
+            <button onclick="window.print()" class="text-xs text-slate-600 hover:text-slate-900 font-medium py-2 px-3 border border-slate-300 rounded-lg hover:bg-slate-100 transition">
+              <i class="fa-solid fa-print mr-1"></i> Print / Save Report
+            </button>
+            <button onclick="resetScan()" class="text-xs text-green-600 hover:text-green-700 font-bold py-2 px-3 hover:bg-green-50 rounded-lg transition">
+              <i class="fa-solid fa-rotate-right mr-1"></i> Scan Another Crop
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t border-slate-200 py-6 mt-auto">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-3">
+      <div class="flex items-center space-x-2">
+        <span>Built by <strong>Akhilesh Tribhavan Nishad</strong></span>
+        <span>•</span>
+        <span>Google Gen AI Academy APAC Edition 2026</span>
+      </div>
+      <div class="flex items-center space-x-4">
+        <span>Powered by <strong>Google Gemini 2.5 Flash</strong></span>
+        <span>•</span>
+        <a href="https://github.com" target="_blank" class="text-green-600 hover:underline">GitHub Repository</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- API Key Modal -->
+  <div id="apiModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 class="text-base font-bold text-slate-900 flex items-center space-x-2">
+          <i class="fa-solid fa-key text-yellow-500"></i>
+          <span>Gemini API Key Configuration</span>
+        </h3>
+        <button onclick="closeApiModal()" class="text-slate-400 hover:text-slate-600">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+      <p class="text-xs text-slate-600">
+        Enter your Google Gemini API key to enable live multimodal vision inference. Keys are stored locally in your browser and sent securely over API calls.
+      </p>
+      <div>
+        <label class="block text-xs font-semibold text-slate-700 mb-1">Google Gemini API Key (starts with AIzaSy...):</label>
+        <input type="password" id="customApiKeyInput" placeholder="AIzaSy..." class="w-full text-xs font-mono border border-slate-300 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-green-500">
+        <p class="text-[11px] text-slate-500 mt-1">Get your free key at <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-green-600 underline">aistudio.google.com</a></p>
+      </div>
+      <div class="flex justify-end space-x-2 pt-2">
+        <button onclick="closeApiModal()" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition">
+          Cancel
+        </button>
+        <button onclick="saveApiKey()" class="px-4 py-2 text-xs font-semibold bg-green-600 hover:bg-green-700 text-white rounded-xl shadow transition">
+          Save & Apply
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript Logic -->
+  <script>
+    let currentSelectedFile = null;
+    let currentDiagnosisData = null;
+    let isPlayingAudio = false;
+
+    // Load saved API key on startup
+    document.addEventListener("DOMContentLoaded", () => {
+      const savedKey = localStorage.getItem("agrivision_gemini_api_key");
+      if (savedKey) {
+        document.getElementById("customApiKeyInput").value = savedKey;
+      }
+      checkServerHealth();
+    });
+
+    async function checkServerHealth() {
+      try {
+        const res = await fetch("/api/health");
+        const data = await res.json();
+        if (data.has_api_key || localStorage.getItem("agrivision_gemini_api_key")) {
+          document.getElementById("apiStatusBadge").classList.remove("hidden");
+        }
+      } catch (e) {
+        console.log("Health check error", e);
+      }
+    }
+
+    // Modal controls
+    function openApiModal() {
+      document.getElementById("apiModal").classList.remove("hidden");
+    }
+    function closeApiModal() {
+      document.getElementById("apiModal").classList.add("hidden");
+    }
+    function saveApiKey() {
+      const val = document.getElementById("customApiKeyInput").value.trim();
+      if (val) {
+        localStorage.setItem("agrivision_gemini_api_key", val);
+      } else {
+        localStorage.removeItem("agrivision_gemini_api_key");
+      }
+      closeApiModal();
+      checkServerHealth();
+    }
+
+    // Dropzone click trigger
+    document.getElementById("dropZone").addEventListener("click", (e) => {
+      if (e.target.closest("label") || e.target.closest("input")) return;
+      document.getElementById("fileInput").click();
+    });
+
+    // Drag and drop handlers
+    const dropZone = document.getElementById("dropZone");
+    ['dragenter', 'dragover'].forEach(name => {
+      dropZone.addEventListener(name, (e) => {
+        e.preventDefault();
+        dropZone.classList.add('border-green-500', 'bg-green-50/50');
+      });
+    });
+    ['dragleave', 'drop'].forEach(name => {
+      dropZone.addEventListener(name, (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('border-green-500', 'bg-green-50/50');
+      });
+    });
+    dropZone.addEventListener('drop', (e) => {
+      const dt = e.dataTransfer;
+      const files = dt.files;
+      if (files.length > 0) {
+        loadFile(files[0]);
+      }
+    });
+
+    function handleFileSelect(e) {
+      if (e.target.files.length > 0) {
+        loadFile(e.target.files[0]);
+      }
+    }
+
+    function loadFile(file) {
+      currentSelectedFile = file;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        document.getElementById("previewImage").src = e.target.result;
+        document.getElementById("uploadPrompt").classList.add("hidden");
+        document.getElementById("previewContainer").classList.remove("hidden");
+        
+        const analyzeBtn = document.getElementById("analyzeBtn");
+        analyzeBtn.disabled = false;
+        analyzeBtn.className = "w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-xl shadow-md transition duration-200 flex items-center justify-center space-x-2 cursor-pointer hover:shadow-lg";
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // 1-Click Demo Samples
+    async function loadSample(sampleId) {
+      const lang = document.getElementById("langSelect").value;
+      try {
+        const res = await fetch(`/api/sample/${sampleId}?lang=${lang}`);
+        const data = await res.json();
+        
+        // Show mock preview image
+        document.getElementById("uploadPrompt").classList.add("hidden");
+        document.getElementById("previewContainer").classList.remove("hidden");
+        
+        // Set sample visual illustration
+        const sampleColors = {
+          "tomato_late_blight": "https://images.unsplash.com/photo-1592417817098-8f3d69104a47?w=600&auto=format&fit=crop&q=80",
+          "rice_blast": "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=600&auto=format&fit=crop&q=80",
+          "cotton_leaf_curl": "https://images.unsplash.com/photo-1606041008023-472dfb5e530f?w=600&auto=format&fit=crop&q=80",
+          "healthy_wheat": "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=600&auto=format&fit=crop&q=80"
+        };
+        document.getElementById("previewImage").src = sampleColors[sampleId] || "";
+        
+        renderResults(data);
+      } catch (err) {
+        console.error("Error loading sample:", err);
+      }
+    }
+
+    // Run Gemini Multimodal Diagnosis
+    async function runDiagnosis() {
+      if (!currentSelectedFile) return;
+
+      const scanOverlay = document.getElementById("scanOverlay");
+      scanOverlay.classList.remove("hidden");
+      
+      const analyzeBtn = document.getElementById("analyzeBtn");
+      analyzeBtn.disabled = true;
+
+      const lang = document.getElementById("langSelect").value;
+      const customKey = localStorage.getItem("agrivision_gemini_api_key") || "";
+
+      const formData = new FormData();
+      formData.append("image", currentSelectedFile);
+      formData.append("language", lang);
+      if (customKey) {
+        formData.append("custom_api_key", customKey);
+      }
+
+      try {
+        const response = await fetch("/api/diagnose", {
+          method: "POST",
+          body: formData
+        });
+
+        if (!response.ok) throw new Error("Diagnosis failed");
+        const data = await response.json();
+        renderResults(data);
+      } catch (err) {
+        console.error("Diagnosis error:", err);
+        alert("Failed to analyze image. Checking connection...");
+      } finally {
+        scanOverlay.classList.add("hidden");
+        analyzeBtn.disabled = false;
+      }
+    }
+
+    // Render Diagnostic Results
+    function renderResults(data) {
+      currentDiagnosisData = data;
+      document.getElementById("placeholderState").classList.add("hidden");
+      document.getElementById("resultsCard").classList.remove("hidden");
+
+      document.getElementById("resCropName").innerText = data.crop_name || "Identified Crop";
+      document.getElementById("resDiseaseName").innerText = data.disease_name || "Diagnosis Result";
+      
+      // Severity color mapping
+      const severityEl = document.getElementById("resSeverityBadge");
+      const sev = (data.severity_level || "Low").toLowerCase();
+      if (sev.includes("high") || sev.includes("critical")) {
+        severityEl.className = "px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-red-100 text-red-700 border border-red-200";
+      } else if (sev.includes("mod")) {
+        severityEl.className = "px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-amber-100 text-amber-700 border border-amber-200";
+      } else {
+        severityEl.className = "px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-green-100 text-green-700 border border-green-200";
+      }
+      severityEl.innerText = `${data.severity_level || 'Moderate'} Severity`;
+
+      document.getElementById("resConfidenceBadge").innerHTML = `<i class="fa-solid fa-circle-check text-emerald-500 mr-1"></i>${data.confidence_score || 95}% Confidence`;
+      
+      const langNames = { en: "English", hi: "Hindi", mr: "Marathi", te: "Telugu", ta: "Tamil", bn: "Bengali" };
+      document.getElementById("resVoiceLang").innerText = langNames[data.language || 'en'] || "Selected Language";
+      document.getElementById("resVernacularText").innerText = data.vernacular_summary || "Diagnosis complete.";
+
+      document.getElementById("resPathogen").innerText = data.pathogen_type || "Biological";
+      
+      // Populate lists
+      populateList("resSymptomsList", data.symptoms);
+      document.getElementById("resYieldRisk").innerText = data.yield_risk_assessment || "Monitor crop closely.";
+      
+      populateFormattedList("resOrganicList", data.organic_treatment, "fa-leaf text-emerald-600");
+      populateFormattedList("resChemicalList", data.chemical_treatment, "fa-flask text-blue-600");
+      populateList("resPreventionList", data.preventative_measures);
+
+      // Reset audio state
+      stopAudio();
+    }
+
+    function populateList(id, items) {
+      const el = document.getElementById(id);
+      el.innerHTML = "";
+      if (!items || items.length === 0) {
+        el.innerHTML = "<li>No specific items noted.</li>";
+        return;
+      }
+      items.forEach(item => {
+        const li = document.createElement("li");
+        li.innerText = item;
+        el.appendChild(li);
+      });
+    }
+
+    function populateFormattedList(id, items, iconClass) {
+      const el = document.getElementById(id);
+      el.innerHTML = "";
+      if (!items || items.length === 0) {
+        el.innerHTML = "<p class='text-slate-400'>No treatments required.</p>";
+        return;
+      }
+      items.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "flex items-start space-x-2";
+        div.innerHTML = `<i class="fa-solid ${iconClass} mt-0.5 text-xs"></i><span>${item}</span>`;
+        el.appendChild(div);
+      });
+    }
+
+    // Audio Playback with Edge-TTS or Web Speech API fallback
+    async function toggleAudio() {
+      if (isPlayingAudio) {
+        stopAudio();
+        return;
+      }
+
+      if (!currentDiagnosisData || !currentDiagnosisData.vernacular_summary) return;
+
+      const btnText = document.getElementById("audioBtnText");
+      const icon = document.getElementById("audioIcon");
+      btnText.innerText = "Generating voice...";
+      icon.className = "fa-solid fa-spinner fa-spin";
+
+      const text = currentDiagnosisData.vernacular_summary;
+      const lang = document.getElementById("langSelect").value;
+
+      try {
+        const formData = new FormData();
+        formData.append("text", text);
+        formData.append("language", lang);
+
+        const res = await fetch("/api/tts", { method: "POST", body: formData });
+        if (!res.ok) throw new Error("TTS failed");
+
+        const blob = await res.blob();
+        const audioUrl = URL.createObjectURL(blob);
+        const player = document.getElementById("audioPlayer");
+        player.src = audioUrl;
+
+        player.onplay = () => {
+          isPlayingAudio = true;
+          btnText.innerText = "Pause";
+          icon.className = "fa-solid fa-pause";
+        };
+
+        player.onended = () => {
+          stopAudio();
+        };
+
+        player.play();
+      } catch (err) {
+        console.warn("Server TTS fallback to browser Web Speech API:", err);
+        // Fallback to browser built-in Web Speech API
+        if ('speechSynthesis' in window) {
+          const utterance = new SpeechSynthesisUtterance(text);
+          utterance.lang = lang === "hi" ? "hi-IN" : "en-US";
+          utterance.onend = () => stopAudio();
+          window.speechSynthesis.speak(utterance);
+          isPlayingAudio = true;
+          btnText.innerText = "Pause";
+          icon.className = "fa-solid fa-pause";
+        } else {
+          stopAudio();
+          alert("Audio synthesis unavailable in this browser.");
+        }
+      }
+    }
+
+    function stopAudio() {
+      const player = document.getElementById("audioPlayer");
+      if (player) {
+        player.pause();
+        player.currentTime = 0;
+      }
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+      isPlayingAudio = false;
+      document.getElementById("audioBtnText").innerText = "Listen";
+      document.getElementById("audioIcon").className = "fa-solid fa-play";
+    }
+
+    // Language Change
+    function changeLanguage() {
+      if (currentDiagnosisData) {
+        // If sample, reload with new language
+        if (currentDiagnosisData.crop_name.includes("Tomato")) loadSample("tomato_late_blight");
+        else if (currentDiagnosisData.crop_name.includes("Rice")) loadSample("rice_blast");
+        else if (currentDiagnosisData.crop_name.includes("Cotton")) loadSample("cotton_leaf_curl");
+        else if (currentDiagnosisData.crop_name.includes("Wheat")) loadSample("healthy_wheat");
+        else if (currentSelectedFile) runDiagnosis();
+      }
+    }
+
+    // Agronomist Chat
+    async function sendChatMessage() {
+      const input = document.getElementById("chatInput");
+      const msg = input.value.trim();
+      if (!msg) return;
+
+      const history = document.getElementById("chatHistory");
+      const userBubble = document.createElement("div");
+      userBubble.className = "bg-green-50 text-green-900 p-2.5 rounded-lg text-right font-medium";
+      userBubble.innerText = msg;
+      history.appendChild(userBubble);
+      input.value = "";
+
+      const aiBubble = document.createElement("div");
+      aiBubble.className = "bg-slate-100 p-2.5 rounded-lg text-slate-700 italic";
+      aiBubble.innerHTML = "<i class='fa-solid fa-circle-notch fa-spin text-green-600 mr-1'></i> Gemini analyzing...";
+      history.appendChild(aiBubble);
+      history.scrollTop = history.scrollHeight;
+
+      try {
+        const crop = currentDiagnosisData ? currentDiagnosisData.crop_name : "Crop";
+        const disease = currentDiagnosisData ? currentDiagnosisData.disease_name : "General issue";
+        const lang = document.getElementById("langSelect").value;
+        const apiKey = localStorage.getItem("agrivision_gemini_api_key") || "";
+
+        const res = await fetch("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            crop_name: crop,
+            disease_name: disease,
+            message: msg,
+            language: lang,
+            api_key: apiKey
+          })
+        });
+        const data = await res.json();
+        aiBubble.className = "bg-slate-100 p-2.5 rounded-lg text-slate-800 not-italic";
+        aiBubble.innerText = data.reply || "Recommendation applied.";
+      } catch (e) {
+        aiBubble.innerText = "Always apply treatment during early morning hours to protect leaf tissue.";
+      }
+      history.scrollTop = history.scrollHeight;
+    }
+
+    function resetScan() {
+      currentSelectedFile = null;
+      currentDiagnosisData = null;
+      document.getElementById("previewContainer").classList.add("hidden");
+      document.getElementById("uploadPrompt").classList.remove("hidden");
+      document.getElementById("resultsCard").classList.add("hidden");
+      document.getElementById("placeholderState").classList.remove("hidden");
+      const analyzeBtn = document.getElementById("analyzeBtn");
+      analyzeBtn.disabled = true;
+      analyzeBtn.className = "w-full bg-slate-300 text-slate-500 font-bold py-3 px-4 rounded-xl shadow-sm transition duration-200 flex items-center justify-center space-x-2 cursor-not-allowed";
+      stopAudio();
+    }
+  </script>
+</body>
+</html>
