@@ -2,12 +2,14 @@
 
 [![Google Cloud](https://img.shields.io/badge/Google%20Cloud-Gen%20AI%20APAC%202026-4285F4?style=for-the-badge&logo=googlecloud&logoColor=white)](https://cloud.google.com)
 [![Google Gemini](https://img.shields.io/badge/Powered%20By-Gemini%202.5%20Flash-8E75C2?style=for-the-badge&logo=googlegemini&logoColor=white)](https://aistudio.google.com)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Online%2024%2F7-success?style=for-the-badge&logo=githubpages&logoColor=white)](https://akhileshtribhavannishad1-sketch.github.io/agrivision-ai/)
 [![FastAPI](https://img.shields.io/badge/Backend-FastAPI%200.115-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](LICENSE)
 
 > **Built for Google Gen AI Academy APAC Edition 2026 — Meet the Builders Initiative**  
-> *Category: Hall of Fame / Social Spotlight Submission*  
-> **Author:** Akhilesh Tribhavan Nishad
+> *Category: Hall of Fame / Top 3 Social Spotlight Submission*  
+> **Author:** Akhilesh Tribhavan Nishad  
+> **🌐 Live Production Website:** [https://akhileshtribhavannishad1-sketch.github.io/agrivision-ai/](https://akhileshtribhavannishad1-sketch.github.io/agrivision-ai/)
 
 ---
 
