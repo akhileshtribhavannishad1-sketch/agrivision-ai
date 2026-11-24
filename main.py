@@ -11,6 +11,7 @@ import json
 import base64
 import uuid
 import asyncio
+import tempfile
 from typing import Optional, List, Dict, Any
 from pathlib import Path
 
@@ -27,9 +28,14 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"
-AUDIO_DIR = BASE_DIR / "temp_audio"
-STATIC_DIR.mkdir(exist_ok=True)
-AUDIO_DIR.mkdir(exist_ok=True)
+if not STATIC_DIR.exists() and (BASE_DIR.parent / "static").exists():
+    STATIC_DIR = BASE_DIR.parent / "static"
+
+AUDIO_DIR = Path(tempfile.gettempdir()) / "agrivision_audio"
+try:
+    AUDIO_DIR.mkdir(parents=True, exist_ok=True)
+except Exception:
+    pass
 
 app = FastAPI(
     title="AgriVision AI",
@@ -84,10 +90,16 @@ class ChatRequest(BaseModel):
 
 @app.get("/", response_class=HTMLResponse)
 async def serve_index():
-    index_file = STATIC_DIR / "index.html"
-    if index_file.exists():
-        return HTMLResponse(content=index_file.read_text(encoding="utf-8"))
-    return HTMLResponse("<h1>AgriVision AI is compiling...</h1>")
+    candidates = [
+        STATIC_DIR / "index.html",
+        BASE_DIR / "static" / "index.html",
+        BASE_DIR.parent / "static" / "index.html",
+        Path.cwd() / "static" / "index.html"
+    ]
+    for c in candidates:
+        if c.exists():
+            return HTMLResponse(content=c.read_text(encoding="utf-8"))
+    return HTMLResponse("<h1>AgriVision AI is ready</h1>")
 
 @app.get("/api/health")
 async def health_check():
@@ -307,7 +319,11 @@ Respond directly in {target_lang}.
         "reply": f"For {request.crop_name} recovering from {request.disease_name}: Make sure to spray any organic or chemical treatment during early morning hours before sunlight heats up the leaves. Ensure good soil drainage and avoid wetting the plant leaves directly."
     }
 
-app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+if STATIC_DIR.exists():
+    try:
+        app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+    except Exception as e:
+        print(f"StaticFiles mount warning: {e}")
 
 if __name__ == "__main__":
     import uvicorn

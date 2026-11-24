@@ -1,3 +1,9 @@
-from main import app
+import sys
+from pathlib import Path
 
-# Vercel serverless entrypoint
+# Ensure root directory is in sys.path so main.py is found by Vercel serverless functions
+root_dir = Path(__file__).resolve().parent.parent
+if str(root_dir) not in sys.path:
+    sys.path.insert(0, str(root_dir))
+
+from main import app
